@@ -4,6 +4,10 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+// Import routes
+const authRoutes = require('./src/routes/auth.routes');
+const eventRoutes = require('./src/routes/event.routes');
+
 /**
  * Initialize the Express application
  */
@@ -16,6 +20,13 @@ const PORT = process.env.PORT || 3000;
  */
 app.use(cors());
 app.use(express.json()); // Built-in middleware to parse JSON bodies
+
+/**
+ * API Routes
+ * All authentication routes will be prefixed with /api/
+ */
+app.use('/api/auth', authRoutes);
+app.use('/api/events', eventRoutes);
 
 /**
  * Basic Health Check Route
@@ -33,4 +44,6 @@ app.get('/', (req, res) => {
  */
 app.listen(PORT, () => {
     console.log(`🚀 Server is successfully running on port ${PORT}`);
+    console.log(`Auth endpoints available at: http://localhost:${PORT}/api/auth/login`);
+    console.log(`Events endpoints available at: http://localhost:${PORT}/api/events`);
 });

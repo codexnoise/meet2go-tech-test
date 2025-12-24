@@ -1,0 +1,3 @@
+## 🤖 Uso de Inteligencia Artificial en el Desarrollo
+
+En el diseño e implementación de este proyecto Full Stack, se integró el uso de Inteligencia Artificial como herramienta principal de aceleración y asistencia técnica. Aproximadamente el 80% del código base fue generado mediante IA, bajo un proceso estructurado de "Prompt Engineering". Una vez definida la arquitectura (Feature-First y Layered), se suministró el contexto técnico y los requerimientos específicos a la IA para asegurar que el código producido fuera óptimo, coherente con las reglas de negocio y alineado con los estándares de desarrollo propuestos. Este enfoque permitió reducir significativamente los tiempos de implementación sin comprometer la calidad estructural del producto.

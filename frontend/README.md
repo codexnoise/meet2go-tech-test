@@ -1,4 +1,4 @@
-# meet2go_app
+# tickets_app
 
 A new Flutter project.
 

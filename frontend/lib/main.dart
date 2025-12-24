@@ -17,6 +17,8 @@ void main() {
   );
 }
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class Meet2GoApp extends ConsumerWidget {
   const Meet2GoApp({super.key});
 
@@ -27,6 +29,7 @@ class Meet2GoApp extends ConsumerWidget {
 
     return MaterialApp(
       title: 'Meet2Go',
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.indigo,
@@ -41,7 +44,7 @@ class Meet2GoApp extends ConsumerWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/events': (context) => const EventListScreen(),
-        '/purchase-success': (context) => const PurchaseDetailScreen(), // Nueva ruta
+        '/purchase-success': (context) => const PurchaseDetailScreen(),
       },
     );
   }

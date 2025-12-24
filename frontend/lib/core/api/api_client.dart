@@ -6,9 +6,10 @@ import 'package:dio/dio.dart';
 class ApiClient {
   late Dio _dio;
 
-  // Change this to your machine's IP address for physical device testing
-  // or 10.0.2.2 for Android Emulator.
-  final String _baseUrl = 'http://localhost:3000/api';
+  // 1. If using ANDROID EMULATOR: Use 10.0.2.2
+  // 2. If using IOS SIMULATOR: Use 127.0.0.1 or localhost
+  // 3. If using PHYSICAL DEVICE: Use your computer's local IP (e.g., 192.168.1.50)
+  final String _baseUrl = 'http://10.0.2.2:3000/api';
 
   ApiClient() {
     _dio = Dio(

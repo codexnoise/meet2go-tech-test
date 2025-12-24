@@ -5,58 +5,52 @@ import 'package:meet2go_app/features/events/data/repositories/event_repository.d
 import '../../../auth/logic/auth_provider.dart';
 import '../models/event_model.dart';
 
-// 1. Proveedor del Repositorio
+// 1. Repository Provider
 final eventRepositoryProvider = Provider((ref) {
   final apiClient = ref.watch(apiClientProvider);
   return EventRepository(apiClient);
 });
 
-// 2. Proveedor de la lista de eventos (Future)
+// 2. Event List Provider
 final eventsListProvider = FutureProvider<List<EventModel>>((ref) async {
   return ref.watch(eventRepositoryProvider).fetchEvents();
 });
 
-// 3. El Controlador de Compra (La pieza que faltaba)
+// 3. Purchase Controller
 final purchaseControllerProvider = StateNotifierProvider<PurchaseController, AsyncValue<PurchaseResult?>>((ref) {
   return PurchaseController(ref);
 });
 
-/// Controller que maneja el proceso de compra.
-/// Usa AsyncValue para representar los 3 estados: Idle (data null), Loading, y Error/Success.
+/// AsyncValue to represent the 3 states: Idle (data null), Loading, and Error/Success.
 class PurchaseController extends StateNotifier<AsyncValue<PurchaseResult?>> {
   final Ref ref;
 
   PurchaseController(this.ref) : super(const AsyncValue.data(null));
 
-  /// Ejecuta la lógica de compra de un ticket.
+  /// Executes the purchase logic for a ticket.
   Future<void> executePurchase(String eventId) async {
-    // Ponemos el estado en "Cargando"
+    // 1. Set loading state
     state = const AsyncValue.loading();
 
     try {
-      // Obtenemos el token directamente del AuthController usando Riverpod
       final token = ref.read(authControllerProvider).token;
 
-      if (token == null) {
-        throw Exception('No session found. Please login again.');
-      }
+      // 2. Perform the API call
+      final result = await ref.read(eventRepositoryProvider).buyTicket(eventId, token!);
 
-      // Llamamos al repositorio
-      final result = await ref.read(eventRepositoryProvider).buyTicket(eventId, token);
-
-      // Si todo sale bien, guardamos el resultado
+      // 3. Update the state here to trigger the UI listener
       state = AsyncValue.data(result);
 
-      // ¡IMPORTANTE!: Refrescamos la lista de eventos para que el stock se actualice en el Home
+      // 4. Refresh the events list
       ref.invalidate(eventsListProvider);
 
     } catch (e, stack) {
-      // Si hay error (ej. falta de stock), lo capturamos
+      // 5. Update state with error if something fails
       state = AsyncValue.error(e, stack);
     }
   }
 
-  /// Limpia el estado de la compra para permitir compras futuras sin interferencias.
+  /// Clears the purchase state to allow future purchases without interference.
   void reset() {
     state = const AsyncValue.data(null);
   }

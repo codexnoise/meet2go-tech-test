@@ -17,11 +17,16 @@ class EventRepository {
   /// Sends a purchase request to the backend.
   /// Requires a valid JWT token.
   Future<PurchaseResult> buyTicket(String eventId, String token) async {
-    final response = await apiClient.dio.post(
-      '/events/purchase',
-      data: {'eventId': eventId, 'quantity': 1},
-      options: Options(headers: {'Authorization': 'Bearer $token'}),
-    );
-    return PurchaseResult.fromJson(response.data['data']);
+    try {
+      final response = await apiClient.dio.post(
+        '/events/purchase',
+        data: {'eventId': eventId, 'quantity': 1},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      return PurchaseResult.fromJson(response.data['data']);
+    } on DioException catch (e) {
+      final errorMessage = e.response?.data['message'] ?? 'An unexpected error occurred';
+      throw Exception(errorMessage);
+    }
   }
 }

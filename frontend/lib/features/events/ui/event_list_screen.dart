@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../main.dart';
 import '../../auth/logic/auth_provider.dart';
 import '../data/models/event_model.dart';
 import '../data/repositories/event_providers.dart';
@@ -9,23 +10,23 @@ class EventListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchamos el estado de la compra para navegar cuando sea exitosa
     ref.listen<AsyncValue<PurchaseResult?>>(purchaseControllerProvider, (previous, next) {
       next.whenOrNull(
         data: (result) {
           if (result != null) {
-            Navigator.pushNamed(context, '/purchase-success', arguments: result);
+            navigatorKey.currentState?.pushNamed('/purchase-success', arguments: result);
+            ref.read(purchaseControllerProvider.notifier).reset();
           }
         },
         error: (error, _) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error en la compra: $error'), backgroundColor: Colors.red),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $error'), backgroundColor: Colors.red));
         },
       );
     });
 
-    // Obtenemos la lista de eventos (FutureProvider)
+    // Get the event list
     final eventsAsync = ref.watch(eventsListProvider);
     final user = ref.watch(authControllerProvider).user;
 
@@ -44,7 +45,10 @@ class EventListScreen extends ConsumerWidget {
           if (user != null)
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text('Bienvenido, ${user.name}', style: Theme.of(context).textTheme.titleMedium),
+              child: Text(
+                'Welcome, ${user.name}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
           Expanded(
             child: eventsAsync.when(
@@ -59,7 +63,7 @@ class EventListScreen extends ConsumerWidget {
                 ),
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text('Error al cargar eventos: $err')),
+              error: (err, stack) => Center(child: Text('Error to fetch events: $err')),
             ),
           ),
         ],
@@ -70,6 +74,7 @@ class EventListScreen extends ConsumerWidget {
 
 class _EventCard extends ConsumerWidget {
   final EventModel event;
+
   const _EventCard({required this.event});
 
   @override
@@ -81,7 +86,10 @@ class _EventCard extends ConsumerWidget {
       child: ListTile(
         title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text('${event.description}\nStock: ${event.stock}'),
-        trailing: Text('\$${event.price}', style: const TextStyle(color: Colors.green, fontSize: 16)),
+        trailing: Text(
+          '\$${event.price}',
+          style: const TextStyle(color: Colors.green, fontSize: 16),
+        ),
         isThreeLine: true,
         onTap: () => _showPurchaseDialog(context, ref, event, purchaseState.isLoading),
       ),
@@ -93,23 +101,24 @@ class _EventCard extends ConsumerWidget {
       context: context,
       barrierDismissible: !isLoading,
       builder: (context) => AlertDialog(
-        title: const Text('Confirmar Compra'),
-        content: Text('¿Deseas comprar 1 ticket para "${event.title}" por \$${event.price}?'),
+        title: const Text('Confirm Purchase'),
+        content: Text('¿You wish to purchase 1 ticket for "${event.title}" by \$${event.price}?'),
         actions: [
           TextButton(
             onPressed: isLoading ? null : () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: isLoading
                 ? null
                 : () async {
-              await ref.read(purchaseControllerProvider.notifier).executePurchase(event.id);
-              if (context.mounted) Navigator.pop(context); // Cierra el dialog
-            },
+                    Navigator.pop(context);
+
+                    await ref.read(purchaseControllerProvider.notifier).executePurchase(event.id);
+                  },
             child: isLoading
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Comprar ahora'),
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator())
+                : const Text('Buy Now'),
           ),
         ],
       ),
